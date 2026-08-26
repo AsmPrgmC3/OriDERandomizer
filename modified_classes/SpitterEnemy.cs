@@ -1,4 +1,3 @@
-using fsm;
 using fsm.triggers;
 using UnityEngine;
 

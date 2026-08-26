@@ -1,3 +1,4 @@
+using System;
 using CatlikeCoding.TextBox;
 using Game;
 using UnityEngine;
@@ -49,7 +50,7 @@ public class RandomizerVersionLabel : MonoBehaviour {
             }
 
             Place();
-        } catch (System.Exception e) {
+        } catch (Exception e) {
             Randomizer.log($"version label: {e}");
             enabled = false;
         }

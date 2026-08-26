@@ -207,7 +207,7 @@ public class GameMapTeleporters : MonoBehaviour {
         SelectedTeleporter.Dehighlight();
         SelectedIndex = index;
         SelectedTeleporter.Highlight();
-        GameWorldArea area = GameWorld.Instance.FindAreaFromPosition(SelectedTeleporter.WorldPosition);
+        var area = GameWorld.Instance.FindAreaFromPosition(SelectedTeleporter.WorldPosition);
         GameMapUI.Instance.CurrentHighlightedArea = GameWorld.Instance.FindRuntimeArea(area);
     }
 

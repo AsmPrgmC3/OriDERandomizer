@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Game;
-using UnityEngine;
 
 public class ActionSequence : PerformingAction, IPooled, ISuspendable {
     public bool IsRunning {

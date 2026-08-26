@@ -239,12 +239,12 @@ public class SaveSceneManager : MonoBehaviour {
     public static void ClearSaveSlotForOneLife(SaveGameData data) {
         var item = default(SaveObject);
         if (SeinDeathsManager.Instance) {
-            item = data.Master.SaveObjects.Find((SaveObject a) => a.Id == SeinDeathsManager.Instance.MoonGuid);
+            item = data.Master.SaveObjects.Find(a => a.Id == SeinDeathsManager.Instance.MoonGuid);
         }
 
         data.PendingScenes.Clear();
         data.Scenes.Clear();
-        SaveScene master = data.Master;
+        var master = data.Master;
         master.SaveObjects.Add(item);
     }
 

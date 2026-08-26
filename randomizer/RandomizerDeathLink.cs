@@ -88,6 +88,7 @@ public static class RandomizerDeathLink {
                 stableFrames = 0;
                 return;
             }
+
             armed = false;
             Characters.Sein.Inventory.IncRandomizerItem(Deaths, 1);
             if (killInFlight) {

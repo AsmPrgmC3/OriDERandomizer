@@ -203,7 +203,7 @@ public static class RandomizerStatsManager {
 
     public static string CurrentZone() {
         if (GameWorld.Instance && Characters.Sein) {
-            GameWorldArea area = GameWorld.Instance.WorldAreaAtPosition(Characters.Sein.Position);
+            var area = GameWorld.Instance.WorldAreaAtPosition(Characters.Sein.Position);
             if (area != null) {
                 return area.AreaIdentifier;
             }
@@ -257,10 +257,11 @@ public static class RandomizerStatsManager {
                 MenuCache[single] = get(single);
             }
 
-            foreach (var group in new[] { Time, Deaths })
+            foreach (var group in new[] { Time, Deaths }) {
                 foreach (var offset in Offsets.Values) {
                     MenuCache[group + offset] = get(group + offset);
                 }
+            }
 
             WriteFromCache = true;
         } catch (Exception) {

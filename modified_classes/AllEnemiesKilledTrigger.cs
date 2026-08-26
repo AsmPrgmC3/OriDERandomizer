@@ -46,7 +46,7 @@ public class AllEnemiesKilledTrigger : Trigger {
     }
 
     private void RegisterEvent() {
-        Action<Damage> action = EntityKilled;
+        var action = EntityKilled;
         for (var i = 0; i < RespawningPlaceholders.Count; i++) {
             var respawningPlaceholder = RespawningPlaceholders[i];
             respawningPlaceholder.OnCurrentInstanceDeath = (Action<Damage>)Delegate.Combine(respawningPlaceholder.OnCurrentInstanceDeath, action);
@@ -58,7 +58,7 @@ public class AllEnemiesKilledTrigger : Trigger {
     }
 
     private void DeregisterEvent() {
-        Action<Damage> action = EntityKilled;
+        var action = EntityKilled;
         for (var i = 0; i < RespawningPlaceholders.Count; i++) {
             var respawningPlaceholder = RespawningPlaceholders[i];
             respawningPlaceholder.OnCurrentInstanceDeath = (Action<Damage>)Delegate.Remove(respawningPlaceholder.OnCurrentInstanceDeath, action);

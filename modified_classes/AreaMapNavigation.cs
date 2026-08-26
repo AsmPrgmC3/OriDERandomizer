@@ -17,7 +17,7 @@ public class AreaMapNavigation : MonoBehaviour {
     }
 
     public bool BoxIsInsideVisibleCanvas(Rect bound) {
-        foreach (RuntimeGameWorldArea runtimeGameWorldArea in GameWorld.Instance.RuntimeAreas) {
+        foreach (var runtimeGameWorldArea in GameWorld.Instance.RuntimeAreas) {
             var cageStructureTool = runtimeGameWorldArea.Area.CageStructureTool;
             var facesAsRectangles = cageStructureTool.FacesAsRectangles;
             for (var i = 0; i < facesAsRectangles.Length; i++) {
@@ -194,7 +194,7 @@ public class AreaMapNavigation : MonoBehaviour {
         var num2 = 0f;
         var num3 = 0f;
         var num4 = 0f;
-        foreach (RuntimeGameWorldArea runtimeGameWorldArea in GameWorld.Instance.RuntimeAreas) {
+        foreach (var runtimeGameWorldArea in GameWorld.Instance.RuntimeAreas) {
             var area = runtimeGameWorldArea.Area;
             var facesAsRectangles = area.CageStructureTool.FacesAsRectangles;
             for (var i = 0; i < area.CageStructureTool.Faces.Count; i++) {
@@ -248,7 +248,7 @@ public class AreaMapNavigation : MonoBehaviour {
             var offset = .45f * (float)Math.Pow(zoomScaleFactor, 1.5f); // it's kind of a dumb story
             var textScale = new Vector3(0.3f * zoomScaleFactor, 0.3f * zoomScaleFactor, 0.3f); // but they work well i prommy
 
-            foreach (RuntimeGameWorldArea runtimeArea in GameWorld.Instance.RuntimeAreas) {
+            foreach (var runtimeArea in GameWorld.Instance.RuntimeAreas) {
                 foreach (var runtimeIcon in runtimeArea.Icons) {
                     if (!runtimeIcon.IsVisible(m_areaMapUi) || runtimeIcon.Icon == WorldMapIconType.Invisible) {
                         continue;

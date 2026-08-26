@@ -5,7 +5,7 @@ using System.IO;
 
 public class SaveGameData {
     public void SaveToWriter(BinaryWriter writer) {
-        SaveGameData.CurrentSaveFileVersion = 1;
+        CurrentSaveFileVersion = 1;
         writer.Write("SaveGameData");
         writer.Write(1);
         writer.Write(Scenes.Count);
@@ -28,7 +28,7 @@ public class SaveGameData {
             return false;
         }
 
-        SaveGameData.CurrentSaveFileVersion = reader.ReadInt32();
+        CurrentSaveFileVersion = reader.ReadInt32();
         var num = reader.ReadInt32();
         for (var i = 0; i < num; i++) {
             var saveScene = new SaveScene();

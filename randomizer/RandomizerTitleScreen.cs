@@ -1,3 +1,5 @@
+using System;
+using Game;
 using UnityEngine;
 
 // Title screen branding: lifts the vanilla logo and hangs a "Randomizer"
@@ -61,7 +63,7 @@ public class RandomizerTitleScreen {
             var rise = new Vector3(0f, bannerSize.y * RiseFactor, 0f);
             oriLogo.localPosition += rise;
             definitiveEdition.localPosition += rise;
-        } catch (System.Exception e) {
+        } catch (Exception e) {
             // branding must never keep the game off the title screen
             Randomizer.log($"title screen branding: {e}");
         }
@@ -110,7 +112,7 @@ public class RandomizerTitleScreen {
     }
 
     private static Material WholeTextureMaterial() {
-        var controller = Game.UI.MessageController;
+        var controller = UI.MessageController;
         var hintMessage = controller == null ? null : controller.HintMessage;
         if (hintMessage == null) {
             return null;

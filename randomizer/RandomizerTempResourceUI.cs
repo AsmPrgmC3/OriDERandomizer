@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Game;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 // Temporary (over-max) health and energy get their own smaller row directly
 // above each HUD bar: every vanilla fill layer is re-capped at the permanent
@@ -33,12 +34,12 @@ public static class RandomizerTempResourceUI {
                 // installed caps return vanilla values while disabled (see the
                 // provider); untouched HUDs stay untouched. Just drop the rows.
                 if (healthRow != null) {
-                    UnityEngine.Object.Destroy(healthRow);
+                    Object.Destroy(healthRow);
                     healthRow = null;
                 }
 
                 if (energyRow != null) {
-                    UnityEngine.Object.Destroy(energyRow);
+                    Object.Destroy(energyRow);
                     energyRow = null;
                 }
 
@@ -53,11 +54,11 @@ public static class RandomizerTempResourceUI {
                 // scale changed: tear down, rebuild next pass with the new
                 // size (Destroy lands at end of frame)
                 if (healthRow != null) {
-                    UnityEngine.Object.Destroy(healthRow);
+                    Object.Destroy(healthRow);
                 }
 
                 if (energyRow != null) {
-                    UnityEngine.Object.Destroy(energyRow);
+                    Object.Destroy(energyRow);
                 }
 
                 healthRow = null;
@@ -85,7 +86,7 @@ public static class RandomizerTempResourceUI {
     // find each bar's leading fill strip and cap every fill layer at the
     // permanent max; on later passes (fills already ours) just recover refs
     private static void FindFills() {
-        foreach (var driver in UnityEngine.Object.FindObjectsOfType<FloatProviderAnimatorDriver>()) {
+        foreach (var driver in Object.FindObjectsOfType<FloatProviderAnimatorDriver>()) {
             if (driver.Value is SeinHealthVisualMaxProvider) {
                 healthFill = driver;
                 Cap(driver, false, false, ((SeinHealthVisualMaxProvider)driver.Value).DivideBy);
@@ -121,7 +122,7 @@ public static class RandomizerTempResourceUI {
         var ours = fill.Value as RandomizerTempResourceProvider;
         var divideBy = ours != null ? ours.DivideBy : 1f;
 
-        var clone = (GameObject)UnityEngine.Object.Instantiate(fill.gameObject);
+        var clone = Object.Instantiate(fill.gameObject);
         clone.name = energy ? "randomizerTempEnergyRow" : "randomizerTempHealthRow";
 
         var t = clone.transform;
@@ -155,7 +156,7 @@ public static class RandomizerTempResourceUI {
                 continue;
             }
 
-            var layer = (GameObject)UnityEngine.Object.Instantiate(c.gameObject);
+            var layer = Object.Instantiate(c.gameObject);
             layer.name = clone.name + "_" + c.name;
             var lt = layer.transform;
             lt.parent = t;

@@ -7,7 +7,7 @@ public class AreaMapIconManager : MonoBehaviour {
 
     public void ShowAreaIcons() {
         for (var i = 0; i < GameWorld.Instance.RuntimeAreas.Count; i++) {
-            RuntimeGameWorldArea runtimeGameWorldArea = GameWorld.Instance.RuntimeAreas[i];
+            var runtimeGameWorldArea = GameWorld.Instance.RuntimeAreas[i];
             foreach (var icon in RandomizerWorldMapIconManager.Icons) {
                 if (!runtimeGameWorldArea.Area.InsideFace(icon.Position)) {
                     continue;

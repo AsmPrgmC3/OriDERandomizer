@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Game;
@@ -270,8 +268,10 @@ public class RandomizerLocationManager {
                         break;
                     }
 
-                    Randomizer.log($"areas.ori: sidecar attempt {attempt + 1} gave {status} "
-                        + $"({NativeWebSocket.GetLastHttpError()})");
+                    Randomizer.log(
+                        $"areas.ori: sidecar attempt {attempt + 1} gave {status} "
+                        + $"({NativeWebSocket.GetLastHttpError()})"
+                    );
                     Thread.Sleep(500);
                 }
 

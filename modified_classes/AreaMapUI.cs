@@ -143,7 +143,7 @@ public class AreaMapUI : MonoBehaviour, ISuspendable {
 
     public void UpdateCurrentArea() {
         var scrollPosition = Navigation.ScrollPosition;
-        foreach (RuntimeGameWorldArea runtimeGameWorldArea in GameWorld.Instance.RuntimeAreas) {
+        foreach (var runtimeGameWorldArea in GameWorld.Instance.RuntimeAreas) {
             if ((runtimeGameWorldArea.AreaDiscovered || DebugNavigation.UndiscoveredMapVisible) && runtimeGameWorldArea.Area.BoundaryCage.FindFaceAtPositionFaster(scrollPosition) != null) {
                 if (GameMapUI.Instance.CurrentHighlightedArea != runtimeGameWorldArea && ChangeSelectedAreaSound) {
                     Sound.Play(ChangeSelectedAreaSound.GetSound(null), transform.position, null);

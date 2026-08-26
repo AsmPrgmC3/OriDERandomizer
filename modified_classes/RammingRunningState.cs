@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-public class RammingRunningState : RammingEnemyState {
+﻿public class RammingRunningState : RammingEnemyState {
     public RammingRunningState(RammingEnemy rammingEnemy) : base(rammingEnemy) {
     }
 

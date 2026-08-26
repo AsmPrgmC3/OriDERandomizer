@@ -6,6 +6,7 @@ using System.Net;
 using Core;
 using Game;
 using Sein.World;
+using UnityEngine;
 
 public static class BingoController {
     private static string scene() {
@@ -161,12 +162,12 @@ public static class BingoController {
         return crusherGuid != null && guids.Contains(crusherGuid);
     }
 
-    private static UnityEngine.GameObject Sender(Damage damage) {
+    private static GameObject Sender(Damage damage) {
         return damage == null ? null : damage.Sender;
     }
 
     // hazards hang their damage collider off the object that holds the guid
-    private static MoonGuid OwnerGuid(UnityEngine.GameObject target) {
+    private static MoonGuid OwnerGuid(GameObject target) {
         if (target == null) {
             return null;
         }
@@ -227,7 +228,7 @@ public static class BingoController {
         }
     }
 
-    private static string SenderPath(UnityEngine.GameObject sender) {
+    private static string SenderPath(GameObject sender) {
         var path = sender.name;
         var parent = sender.transform.parent;
         for (var i = 0; parent != null && i < 6; i++) {
@@ -855,11 +856,11 @@ public static class BingoController {
         public static void mk() {
             var pairs = new List<BoolGoal>();
             for (var from = 0; from < Teleporters.Length; from++)
-                for (var to = 0; to < Teleporters.Length; to++) {
-                    if (from != to) {
-                        pairs.Add(new BitfieldBoolGoal(JourneyKey(Teleporters[from], Teleporters[to]), JourneyBaseId + from, to));
-                    }
+            for (var to = 0; to < Teleporters.Length; to++) {
+                if (from != to) {
+                    pairs.Add(new BitfieldBoolGoal(JourneyKey(Teleporters[from], Teleporters[to]), JourneyBaseId + from, to));
                 }
+            }
 
             var goal = new JourneyGoal("Journey", pairs);
             MultiBoolGoals[goal.Name] = goal;
