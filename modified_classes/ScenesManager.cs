@@ -12,27 +12,29 @@ public class ScenesManager : SaveSerialize {
 
     public RuntimeSceneMetaData CurrentScene {
         get {
-            for (int i = 0; i < this.ActiveScenes.Count; i++) {
-                SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+            for (var i = 0; i < ActiveScenes.Count; i++) {
+                var sceneManagerScene = ActiveScenes[i];
                 if (!sceneManagerScene.MetaData.DependantScene) {
-                    if (sceneManagerScene.IsVisible && UI.Cameras.Current && sceneManagerScene.MetaData.IsInsideSceneBounds(this.CurrentCameraTargetPosition)) {
-                        return this.ActiveScenes[i].MetaData;
+                    if (sceneManagerScene.IsVisible && UI.Cameras.Current && sceneManagerScene.MetaData.IsInsideSceneBounds(CurrentCameraTargetPosition)) {
+                        return ActiveScenes[i].MetaData;
                     }
                 }
             }
+
             return null;
         }
     }
 
     public SceneManagerScene CurrentSceneManagerScene {
         get {
-            for (int i = 0; i < this.ActiveScenes.Count; i++) {
-                if (!this.ActiveScenes[i].MetaData.DependantScene) {
-                    if (UI.Cameras.Current && this.ActiveScenes[i].MetaData.IsInsideSceneBounds(this.CurrentCameraTargetPosition)) {
-                        return this.ActiveScenes[i];
+            for (var i = 0; i < ActiveScenes.Count; i++) {
+                if (!ActiveScenes[i].MetaData.DependantScene) {
+                    if (UI.Cameras.Current && ActiveScenes[i].MetaData.IsInsideSceneBounds(CurrentCameraTargetPosition)) {
+                        return ActiveScenes[i];
                     }
                 }
             }
+
             return null;
         }
     }
@@ -42,116 +44,124 @@ public class ScenesManager : SaveSerialize {
     public Vector2 CurrentCameraTargetPositionExtrapolated { get; private set; }
 
     public bool SceneVisibleAtPosition(Vector3 position) {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            if (!this.ActiveScenes[i].MetaData.DependantScene) {
-                if (this.ActiveScenes[i].IsVisible && this.ActiveScenes[i].MetaData.IsInsideSceneBounds(position)) {
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            if (!ActiveScenes[i].MetaData.DependantScene) {
+                if (ActiveScenes[i].IsVisible && ActiveScenes[i].MetaData.IsInsideSceneBounds(position)) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
     public bool SceneIsEnabled(SceneMetaData sceneMetaData) {
-        return this.SceneIsEnabled(sceneMetaData.SceneMoonGuid);
+        return SceneIsEnabled(sceneMetaData.SceneMoonGuid);
     }
 
     public bool SceneIsEnabled(MoonGuid sceneMoonGuid) {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (sceneManagerScene.MetaData.SceneMoonGuid == sceneMoonGuid && sceneManagerScene.CurrentState == SceneManagerScene.State.Loaded) {
                 return true;
             }
         }
+
         return false;
     }
 
     public void SetTargetPositions(Vector3 target) {
-        this.CurrentCameraTargetPosition = target;
-        this.CurrentCameraTargetPositionExtrapolated = target;
-        this.m_cameraPositions.Clear();
+        CurrentCameraTargetPosition = target;
+        CurrentCameraTargetPositionExtrapolated = target;
+        m_cameraPositions.Clear();
     }
 
     public bool IsLoadingScenes {
         get {
-            for (int i = 0; i < this.ActiveScenes.Count; i++) {
-                SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+            for (var i = 0; i < ActiveScenes.Count; i++) {
+                var sceneManagerScene = ActiveScenes[i];
                 if (sceneManagerScene.CurrentState == SceneManagerScene.State.Loading) {
                     return true;
                 }
             }
+
             return false;
         }
     }
 
     public Rect GetClampedRect(Vector3 position) {
-        Rect rect = default(Rect);
-        Rect rect2 = rect;
+        var rect = default(Rect);
+        var rect2 = rect;
         rect2.width = 48f;
         rect2.height = 48f;
         rect2.center = position;
         rect = rect2;
         Rect rect3;
-        if (this.GetSceneBoundaryAtPosition(rect.center, out rect3)) {
+        if (GetSceneBoundaryAtPosition(rect.center, out rect3)) {
             rect.xMin = Mathf.Max(rect.xMin, rect3.xMin + 0.1f);
             rect.yMin = Mathf.Max(rect.yMin, rect3.yMin + 0.1f);
             rect.xMax = Mathf.Min(rect.xMax, rect3.xMax - 0.1f);
             rect.yMax = Mathf.Min(rect.yMax, rect3.yMax - 0.1f);
         }
+
         return rect;
     }
 
     public bool IsLoadingScene(Vector3 position) {
-        Rect clampedRect = this.GetClampedRect(position);
+        var clampedRect = GetClampedRect(position);
         Rect rect;
-        this.GetSceneBoundaryAtPosition(position, out rect);
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        GetSceneBoundaryAtPosition(position, out rect);
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (!sceneManagerScene.MetaData.DependantScene) {
                 if (sceneManagerScene.MetaData.IsInsideSceneBounds(clampedRect) || sceneManagerScene.MetaData.IsInsideScenePaddingBounds(clampedRect, rect)) {
                     if (!sceneManagerScene.IsLoadingComplete) {
-                        this.m_scenes.Clear();
+                        m_scenes.Clear();
                         return true;
                     }
-                    foreach (MoonGuid moonGuid in sceneManagerScene.MetaData.IncludedScenes) {
-                        this.m_scenes.Add(moonGuid);
+
+                    foreach (var moonGuid in sceneManagerScene.MetaData.IncludedScenes) {
+                        m_scenes.Add(moonGuid);
                     }
                 }
             }
         }
-        for (int j = 0; j < this.ActiveScenes.Count; j++) {
-            SceneManagerScene sceneManagerScene2 = this.ActiveScenes[j];
-            if (sceneManagerScene2.MetaData.DependantScene && this.m_scenes.Contains(sceneManagerScene2.MetaData.SceneMoonGuid) && !sceneManagerScene2.IsLoadingComplete) {
-                this.m_scenes.Clear();
+
+        for (var j = 0; j < ActiveScenes.Count; j++) {
+            var sceneManagerScene2 = ActiveScenes[j];
+            if (sceneManagerScene2.MetaData.DependantScene && m_scenes.Contains(sceneManagerScene2.MetaData.SceneMoonGuid) && !sceneManagerScene2.IsLoadingComplete) {
+                m_scenes.Clear();
                 return true;
             }
         }
-        this.m_scenes.Clear();
+
+        m_scenes.Clear();
         return false;
     }
 
     public bool PositionInsideSceneStillLoading(Vector3 position) {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (!sceneManagerScene.MetaData.DependantScene) {
                 if (sceneManagerScene.CurrentState == SceneManagerScene.State.Loading && sceneManagerScene.MetaData.IsInsideSceneBounds(position)) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
     public bool ResourcesNeedUnloading {
         get {
-            return this.m_resourcesNeedUnloading != 0;
+            return m_resourcesNeedUnloading != 0;
         }
     }
 
     public void DrawScenesManagerDebugData() {
         GUILayout.BeginArea(new Rect(8f, 16f, 550f, 500f));
-        foreach (SceneManagerScene sceneManagerScene in this.ActiveScenes) {
-            GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+        foreach (var sceneManagerScene in ActiveScenes) {
+            GUILayout.BeginHorizontal();
             switch (sceneManagerScene.CurrentState) {
                 case SceneManagerScene.State.Disabling:
                     GUI.color = new Color(0.8f, 0.8f, 0.8f, 1f);
@@ -169,88 +179,94 @@ public class ScenesManager : SaveSerialize {
                     GUI.color = Color.white;
                     break;
             }
-            GUILayout.Label(sceneManagerScene.MetaData.Scene, new GUILayoutOption[0]);
-            GUILayout.Label("Loading Time: " + sceneManagerScene.LoadingTime, new GUILayoutOption[0]);
+
+            GUILayout.Label(sceneManagerScene.MetaData.Scene);
+            GUILayout.Label("Loading Time: " + sceneManagerScene.LoadingTime);
             if (sceneManagerScene.KeepLoadedForCheckpoint) {
-                GUILayout.Label("(checkpoint)", new GUILayoutOption[0]);
+                GUILayout.Label("(checkpoint)");
             }
+
             if (sceneManagerScene.PreventUnloading) {
-                GUILayout.Label("(preloaded)", new GUILayoutOption[0]);
+                GUILayout.Label("(preloaded)");
             }
+
             GUILayout.EndHorizontal();
         }
+
         GUI.color = Color.white;
         GUILayout.EndArea();
     }
 
     public RuntimeSceneMetaData GetSceneInformation(string sceneName) {
-        for (int i = 0; i < this.AllScenes.Count; i++) {
-            RuntimeSceneMetaData runtimeSceneMetaData = this.AllScenes[i];
+        for (var i = 0; i < AllScenes.Count; i++) {
+            var runtimeSceneMetaData = AllScenes[i];
             if (runtimeSceneMetaData.Scene == sceneName) {
                 return runtimeSceneMetaData;
             }
         }
+
         return null;
     }
 
     public SceneManagerScene GetSceneManagerScene(string sceneName) {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            if (this.ActiveScenes[i].MetaData.Scene == sceneName) {
-                return this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            if (ActiveScenes[i].MetaData.Scene == sceneName) {
+                return ActiveScenes[i];
             }
         }
+
         return null;
     }
 
     public override void Awake() {
         base.Awake();
         Scenes.Manager = this;
-        this.GenerateGuidToRuntimeSceneMetaDataDictionary();
-        GameController.Instance.GameScheduler.OnPassThroughScrollLock.Add(new Action(this.OnPassThroughScrollLock));
-        global::Game.Checkpoint.Events.OnPostCreate.Add(new Action(this.OnCreateCheckpoint));
-        Events.Scheduler.OnGameReset.Add(new Action(this.OnGameReset));
-        AspectRatioManager.OnAspectChanged.Add(new Action(this.OnAspectRatioChanged));
+        GenerateGuidToRuntimeSceneMetaDataDictionary();
+        GameController.Instance.GameScheduler.OnPassThroughScrollLock.Add(OnPassThroughScrollLock);
+        Game.Checkpoint.Events.OnPostCreate.Add(OnCreateCheckpoint);
+        Events.Scheduler.OnGameReset.Add(OnGameReset);
+        AspectRatioManager.OnAspectChanged.Add(OnAspectRatioChanged);
     }
 
     public void OnGameReset() {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             sceneManagerScene.KeepLoadedForCheckpoint = false;
             sceneManagerScene.PreventUnloading = false;
         }
     }
 
     private void GenerateGuidToRuntimeSceneMetaDataDictionary() {
-        for (int i = 0; i < this.AllScenes.Count; i++) {
-            RuntimeSceneMetaData runtimeSceneMetaData = this.AllScenes[i];
-            this.m_guidToRuntimeSceneMetaDatas[runtimeSceneMetaData.SceneMoonGuid] = runtimeSceneMetaData;
+        for (var i = 0; i < AllScenes.Count; i++) {
+            var runtimeSceneMetaData = AllScenes[i];
+            m_guidToRuntimeSceneMetaDatas[runtimeSceneMetaData.SceneMoonGuid] = runtimeSceneMetaData;
         }
     }
 
     public override void OnDestroy() {
-        GameController.Instance.GameScheduler.OnPassThroughScrollLock.Remove(new Action(this.OnPassThroughScrollLock));
-        global::Game.Checkpoint.Events.OnPostCreate.Remove(new Action(this.OnCreateCheckpoint));
-        Events.Scheduler.OnGameReset.Remove(new Action(this.OnGameReset));
-        AspectRatioManager.OnAspectChanged.Remove(new Action(this.OnAspectRatioChanged));
+        GameController.Instance.GameScheduler.OnPassThroughScrollLock.Remove(OnPassThroughScrollLock);
+        Game.Checkpoint.Events.OnPostCreate.Remove(OnCreateCheckpoint);
+        Events.Scheduler.OnGameReset.Remove(OnGameReset);
+        AspectRatioManager.OnAspectChanged.Remove(OnAspectRatioChanged);
     }
 
     public void OnAspectRatioChanged() {
-        this.UpdatePaddingWidthExtension();
+        UpdatePaddingWidthExtension();
     }
 
     public override void Serialize(Archive ar) {
-        this.CurrentCameraTargetPosition = ar.Serialize(this.CurrentCameraTargetPosition);
+        CurrentCameraTargetPosition = ar.Serialize(CurrentCameraTargetPosition);
         if (ar.Reading) {
-            this.CurrentCameraTargetPositionExtrapolated = this.CurrentCameraTargetPosition;
+            CurrentCameraTargetPositionExtrapolated = CurrentCameraTargetPosition;
         }
     }
 
     public void MarkLoadingScenesAsCancel() {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (!sceneManagerScene.MetaData.DependantScene && sceneManagerScene.CurrentState == SceneManagerScene.State.Loading) {
                 sceneManagerScene.ChangeState(SceneManagerScene.State.LoadingCancelled);
-                if (this.CancelScene(sceneManagerScene)) {
+                if (CancelScene(sceneManagerScene)) {
                     i--;
                 }
             }
@@ -258,18 +274,18 @@ public class ScenesManager : SaveSerialize {
     }
 
     public void OnCreateCheckpoint() {
-        this.MarkActiveScenesAsKeepLoaded();
+        MarkActiveScenesAsKeepLoaded();
     }
 
     public void MarkActiveScenesAsKeepLoaded() {
-        Rect rect = default(Rect);
-        Rect rect2 = rect;
+        var rect = default(Rect);
+        var rect2 = rect;
         rect2.width = 48f;
         rect2.height = 48f;
-        rect2.center = this.CurrentCameraTargetPosition;
+        rect2.center = CurrentCameraTargetPosition;
         rect = rect2;
         Rect rect3;
-        if (this.GetSceneBoundaryAtPosition(rect.center, out rect3)) {
+        if (GetSceneBoundaryAtPosition(rect.center, out rect3)) {
             rect.xMin = Mathf.Max(rect.xMin, rect3.xMin + 0.1f);
             rect.yMin = Mathf.Max(rect.yMin, rect3.yMin + 0.1f);
             rect.xMax = Mathf.Max(rect.xMax, rect3.xMax - 0.1f);
@@ -278,8 +294,9 @@ public class ScenesManager : SaveSerialize {
             rect.width = 0f;
             rect.height = 0f;
         }
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (sceneManagerScene.MetaData.IsInsideSceneBounds(rect)) {
                 sceneManagerScene.KeepLoadedForCheckpoint = true;
             } else if (sceneManagerScene.MetaData.IsInsideSceneLoadingZone(rect)) {
@@ -293,8 +310,8 @@ public class ScenesManager : SaveSerialize {
     }
 
     public void ClearKeepLoadedForCheckpoint() {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             sceneManagerScene.KeepLoadedForCheckpoint = false;
         }
     }
@@ -302,161 +319,172 @@ public class ScenesManager : SaveSerialize {
     public bool HasReportedScenesLoading { get; set; }
 
     public void ReportScenesThatAreStillLoading() {
-        this.HasReportedScenesLoading = true;
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        HasReportedScenesLoading = true;
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (sceneManagerScene.CurrentState == SceneManagerScene.State.Loading) {
             }
         }
     }
 
     private void DetectScenesNotLoadedInTime() {
-        if (this.ScenesNotLoadedOnTime) {
-            if (!this.AnyMissingScenesAtCurrentPosition()) {
-                this.ScenesNotLoadedOnTime = false;
+        if (ScenesNotLoadedOnTime) {
+            if (!AnyMissingScenesAtCurrentPosition()) {
+                ScenesNotLoadedOnTime = false;
             }
-        } else if (this.AnyMissingScenesAtCurrentPosition()) {
-            this.ScenesNotLoadedOnTime = true;
+        } else if (AnyMissingScenesAtCurrentPosition()) {
+            ScenesNotLoadedOnTime = true;
         }
     }
 
     private string SceneToLoad {
         get {
-            if (this.m_scenesToLoad.Count > 0) {
-                return this.m_scenesToLoad[0];
+            if (m_scenesToLoad.Count > 0) {
+                return m_scenesToLoad[0];
             }
-            if (this.m_backgroundsToLoad.Count > 0) {
-                return this.m_backgroundsToLoad[0];
+
+            if (m_backgroundsToLoad.Count > 0) {
+                return m_backgroundsToLoad[0];
             }
+
             return string.Empty;
         }
     }
 
     private string PopSceneToLoad() {
-        if (this.m_scenesToLoad.Count > 0) {
-            string text = this.m_scenesToLoad[0];
-            this.m_scenesToLoad.Remove(text);
+        if (m_scenesToLoad.Count > 0) {
+            var text = m_scenesToLoad[0];
+            m_scenesToLoad.Remove(text);
             return text;
         }
-        if (this.m_backgroundsToLoad.Count > 0) {
-            string text2 = this.m_backgroundsToLoad[0];
-            this.m_backgroundsToLoad.Remove(text2);
+
+        if (m_backgroundsToLoad.Count > 0) {
+            var text2 = m_backgroundsToLoad[0];
+            m_backgroundsToLoad.Remove(text2);
             return text2;
         }
+
         return string.Empty;
     }
 
     private void UpdateLoadingScenes() {
-        if (this.m_currentLoad != null && this.m_currentLoad.isDone) {
-            this.m_currentLoad = null;
+        if (m_currentLoad != null && m_currentLoad.isDone) {
+            m_currentLoad = null;
         }
-        if (this.m_currentLoad == null && this.SceneToLoad != string.Empty && this.CanLoadScenes) {
-            this.m_currentLoad = Application.LoadLevelAdditiveAsync(this.PopSceneToLoad());
+
+        if (m_currentLoad == null && SceneToLoad != string.Empty && CanLoadScenes) {
+            m_currentLoad = Application.LoadLevelAdditiveAsync(PopSceneToLoad());
         }
     }
 
     public void TestForFallOutOfWorld() {
-        if (this.m_testDelayTime <= 0f) {
-            this.m_testDelayTime = 1f;
-            if (!this.IsInsideASceneBoundary(this.CurrentCameraTargetPosition)) {
-                GameController.Instance.RestoreCheckpoint(null);
+        if (m_testDelayTime <= 0f) {
+            m_testDelayTime = 1f;
+            if (!IsInsideASceneBoundary(CurrentCameraTargetPosition)) {
+                GameController.Instance.RestoreCheckpoint();
             }
         }
-        this.m_testDelayTime -= Time.deltaTime;
+
+        m_testDelayTime -= Time.deltaTime;
     }
 
     private IEnumerator ShowFellOutOfWorldMessage() {
         yield return new WaitForFixedUpdate();
         yield return new WaitForFixedUpdate();
-        MessageBox message = UI.MessageController.ShowHintMessage(Scenes.Manager.FellOutOfWorldMessage, OnScreenPositions.TopCenter, 3f);
+        var message = UI.MessageController.ShowHintMessage(Scenes.Manager.FellOutOfWorldMessage, OnScreenPositions.TopCenter);
         yield break;
     }
 
     public void ForceTestForOutOfWorld() {
-        this.m_testDelayTime = 0f;
-        this.TestForFallOutOfWorld();
+        m_testDelayTime = 0f;
+        TestForFallOutOfWorld();
     }
 
     public void FixedUpdate() {
         if (UI.Cameras.Current.ScrollLockIsFadingOut) {
             return;
         }
-        if (this.AutoLoadingUnloading) {
-            this.DetectScenesNotLoadedInTime();
-            this.UpdateScenes();
-            this.UpdateExtrapolatedPosition();
-            this.EnableDisabledScenesAtPosition(true);
-            this.TestForFallOutOfWorld();
+
+        if (AutoLoadingUnloading) {
+            DetectScenesNotLoadedInTime();
+            UpdateScenes();
+            UpdateExtrapolatedPosition();
+            EnableDisabledScenesAtPosition(true);
+            TestForFallOutOfWorld();
         }
     }
 
     private void UpdatePaddingWidthExtension() {
-        GameplayCamera current = UI.Cameras.Current;
+        var current = UI.Cameras.Current;
         if (current) {
-            float cameraWidthWorldUnits = UI.Cameras.Current.CameraWidthWorldUnits;
-            float num = cameraWidthWorldUnits - cameraWidthWorldUnits * 1.7777778f / AspectRatioManager.AspectRatio;
-            this.PaddingWidthExtension = num * 0.5f;
+            var cameraWidthWorldUnits = UI.Cameras.Current.CameraWidthWorldUnits;
+            var num = cameraWidthWorldUnits - cameraWidthWorldUnits * 1.7777778f / AspectRatioManager.AspectRatio;
+            PaddingWidthExtension = num * 0.5f;
         }
     }
 
     public void UpdatePosition() {
-        this.m_cameraPositions.Clear();
-        for (int i = 0; i < UI.Cameras.Manager.Cameras.Count; i++) {
-            CameraController cameraController = UI.Cameras.Manager.Cameras[i];
+        m_cameraPositions.Clear();
+        for (var i = 0; i < UI.Cameras.Manager.Cameras.Count; i++) {
+            var cameraController = UI.Cameras.Manager.Cameras[i];
             if (cameraController.PuppetController.Tween > 0.5f) {
-                this.m_cameraPositions.Add(cameraController.Position);
+                m_cameraPositions.Add(cameraController.Position);
             }
         }
+
         if (UI.Cameras.Current.Target) {
             if (!Scenes.Manager.ScenesNotLoadedOnTime) {
                 UI.Cameras.Current.CameraTarget.UpdateTargetPosition();
             }
-            this.CurrentCameraTargetPosition = UI.Cameras.Current.CameraTarget.TargetPosition;
-            this.CurrentCameraTargetPositionExtrapolated = this.CurrentCameraTargetPosition;
-            this.UpdateExtrapolatedPosition();
+
+            CurrentCameraTargetPosition = UI.Cameras.Current.CameraTarget.TargetPosition;
+            CurrentCameraTargetPositionExtrapolated = CurrentCameraTargetPosition;
+            UpdateExtrapolatedPosition();
         }
     }
 
     public void ClearCameraPuppetPositions() {
-        this.m_cameraPositions.Clear();
+        m_cameraPositions.Clear();
     }
 
     public void UpdateExtrapolatedPosition() {
         Rect rect;
-        if (Characters.Sein && this.GetSceneBoundaryAtPosition(this.CurrentCameraTargetPosition, out rect)) {
-            Vector2 vector = this.CurrentCameraTargetPosition + Vector2.ClampMagnitude(Characters.Sein.PhysicsSpeed * 2f, 24f);
-            this.CurrentCameraTargetPositionExtrapolated = new Vector2(Mathf.Clamp(vector.x, rect.xMin + 0.1f, rect.xMax - 0.1f), Mathf.Clamp(vector.y, rect.yMin + 0.1f, rect.yMax - 0.1f));
-            Vector3 vector2 = this.CurrentCameraTargetPosition;
-            Vector3 vector3 = this.CurrentCameraTargetPositionExtrapolated;
-            bool flag = Mathf.Abs(vector3.x - vector2.x) > Mathf.Abs(vector3.y - vector2.y);
-            for (int i = 0; i < 6; i++) {
+        if (Characters.Sein && GetSceneBoundaryAtPosition(CurrentCameraTargetPosition, out rect)) {
+            var vector = CurrentCameraTargetPosition + Vector2.ClampMagnitude(Characters.Sein.PhysicsSpeed * 2f, 24f);
+            CurrentCameraTargetPositionExtrapolated = new Vector2(Mathf.Clamp(vector.x, rect.xMin + 0.1f, rect.xMax - 0.1f), Mathf.Clamp(vector.y, rect.yMin + 0.1f, rect.yMax - 0.1f));
+            Vector3 vector2 = CurrentCameraTargetPosition;
+            Vector3 vector3 = CurrentCameraTargetPositionExtrapolated;
+            var flag = Mathf.Abs(vector3.x - vector2.x) > Mathf.Abs(vector3.y - vector2.y);
+            for (var i = 0; i < 6; i++) {
                 Debug.DrawLine(vector2, vector3, Color.gray);
                 RaycastHit raycastHit;
-                if (!Physics.Linecast(vector2, vector3, out raycastHit, this.RaycastMask)) {
-                    this.CurrentCameraTargetPositionExtrapolated = vector3;
+                if (!Physics.Linecast(vector2, vector3, out raycastHit, RaycastMask)) {
+                    CurrentCameraTargetPositionExtrapolated = vector3;
                     break;
                 }
+
                 vector2 = raycastHit.point - (vector3 - vector2).normalized * 0.02f;
                 if (i == 5) {
-                    this.CurrentCameraTargetPositionExtrapolated = vector2;
+                    CurrentCameraTargetPositionExtrapolated = vector2;
                     break;
                 }
-                Vector3 vector4 = vector2;
-                vector4 += 4f * ((!flag) ? ((raycastHit.normal.x <= 0f) ? Vector3.left : Vector3.right) : ((raycastHit.normal.y <= 0f) ? Vector3.down : Vector3.up));
+
+                var vector4 = vector2;
+                vector4 += 4f * (!flag ? raycastHit.normal.x <= 0f ? Vector3.left : Vector3.right : raycastHit.normal.y <= 0f ? Vector3.down : Vector3.up);
                 Debug.DrawLine(vector2, vector4, Color.gray);
-                vector2 = ((!Physics.Linecast(vector2, vector4, out raycastHit, this.RaycastMask)) ? vector4 : (raycastHit.point - (vector4 - vector2).normalized * 0.02f));
+                vector2 = !Physics.Linecast(vector2, vector4, out raycastHit, RaycastMask) ? vector4 : raycastHit.point - (vector4 - vector2).normalized * 0.02f;
             }
         }
     }
 
     public bool GetSceneBoundaryAtPosition(Vector3 position, out Rect bound) {
-        for (int i = 0; i < this.AllScenes.Count; i++) {
-            RuntimeSceneMetaData runtimeSceneMetaData = this.AllScenes[i];
+        for (var i = 0; i < AllScenes.Count; i++) {
+            var runtimeSceneMetaData = AllScenes[i];
             if (!runtimeSceneMetaData.DependantScene) {
                 if (runtimeSceneMetaData.IsInTotal(position)) {
                     if (runtimeSceneMetaData.CanBeLoaded) {
-                        for (int j = 0; j < runtimeSceneMetaData.SceneBoundaries.Count; j++) {
-                            Rect rect = runtimeSceneMetaData.SceneBoundaries[j];
+                        for (var j = 0; j < runtimeSceneMetaData.SceneBoundaries.Count; j++) {
+                            var rect = runtimeSceneMetaData.SceneBoundaries[j];
                             if (rect.Contains(position)) {
                                 bound = rect;
                                 return true;
@@ -466,61 +494,67 @@ public class ScenesManager : SaveSerialize {
                 }
             }
         }
+
         bound = new Rect(0f, 0f, 0f, 0f);
         return false;
     }
 
     public bool IsInsideASceneBoundary(Vector3 position) {
-        List<RuntimeSceneMetaData> allScenes = this.AllScenes;
-        for (int i = 0; i < allScenes.Count; i++) {
-            RuntimeSceneMetaData runtimeSceneMetaData = allScenes[i];
+        var allScenes = AllScenes;
+        for (var i = 0; i < allScenes.Count; i++) {
+            var runtimeSceneMetaData = allScenes[i];
             if (!runtimeSceneMetaData.DependantScene) {
                 if (runtimeSceneMetaData.IsInTotal(position) && runtimeSceneMetaData.IsInsideSceneBounds(position)) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
     public bool IsInsideActiveSceneBoundary(Vector3 position) {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (!sceneManagerScene.MetaData.DependantScene) {
                 if ((sceneManagerScene.CurrentState == SceneManagerScene.State.Loaded || sceneManagerScene.CurrentState == SceneManagerScene.State.Disabling) && sceneManagerScene.MetaData.IsInsideSceneBounds(position)) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
     public bool IsInsideAScenePaddingBoundary(Vector3 position) {
         Rect rect;
-        this.GetSceneBoundaryAtPosition(position, out rect);
-        List<RuntimeSceneMetaData> allScenes = this.AllScenes;
-        for (int i = 0; i < allScenes.Count; i++) {
+        GetSceneBoundaryAtPosition(position, out rect);
+        var allScenes = AllScenes;
+        for (var i = 0; i < allScenes.Count; i++) {
             if (allScenes[i].IsInsideScenePaddingBounds(position, rect)) {
                 return true;
             }
         }
+
         return false;
     }
 
     public void Update() {
-        if (this.m_resourcesNeedUnloading == 1) {
+        if (m_resourcesNeedUnloading == 1) {
             SaveSceneManager.Master.ReleaseNullReferences();
             SuspensionManager.CleanupSuspendables();
         }
-        if (this.m_resourcesNeedUnloading > 0) {
-            this.m_resourcesNeedUnloading--;
+
+        if (m_resourcesNeedUnloading > 0) {
+            m_resourcesNeedUnloading--;
         }
-        this.DestroyManager.Update();
+
+        DestroyManager.Update();
     }
 
     public SceneRoot FindLoadedSceneRootFromPosition(Vector3 position) {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (sceneManagerScene.CurrentState == SceneManagerScene.State.Loaded || sceneManagerScene.CurrentState == SceneManagerScene.State.Disabled || sceneManagerScene.CurrentState == SceneManagerScene.State.Disabling) {
                 if (sceneManagerScene.SceneRoot && sceneManagerScene.SceneRoot.MetaData) {
                     if (!sceneManagerScene.SceneRoot.MetaData.DependantScene) {
@@ -533,46 +567,50 @@ public class ScenesManager : SaveSerialize {
                 }
             }
         }
+
         return null;
     }
 
     public SceneManagerScene GetFromCurrentScenes(RuntimeSceneMetaData sceneMetaData) {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (sceneManagerScene.MetaData == sceneMetaData) {
                 return sceneManagerScene;
             }
         }
+
         return null;
     }
 
     public RuntimeSceneMetaData FindRuntimeSceneMetaData(MoonGuid sceneGuid) {
         RuntimeSceneMetaData runtimeSceneMetaData;
-        if (this.m_guidToRuntimeSceneMetaDatas.TryGetValue(sceneGuid, out runtimeSceneMetaData)) {
+        if (m_guidToRuntimeSceneMetaDatas.TryGetValue(sceneGuid, out runtimeSceneMetaData)) {
             return runtimeSceneMetaData;
         }
+
         return null;
     }
 
     public void PreloadScene(RuntimeSceneMetaData sceneMetaData) {
-        this.AdditivelyLoadScenesAtPosition(sceneMetaData.PlaceholderPosition, true, false, true);
+        AdditivelyLoadScenesAtPosition(sceneMetaData.PlaceholderPosition, true, false, true);
     }
 
     public void PreloadScene(SceneMetaData sceneMetaData) {
-        this.AdditivelyLoadScenesAtPosition(sceneMetaData.SeinPlaceholderPosition, true, false, true);
+        AdditivelyLoadScenesAtPosition(sceneMetaData.SeinPlaceholderPosition, true, false, true);
     }
 
     private void RemoveScene(SceneManagerScene scene) {
-        this.ActiveScenes.Remove(scene);
+        ActiveScenes.Remove(scene);
     }
 
     private bool CanLevelBeLoaded(string sceneName) {
         bool flag;
-        if (this.m_canBeStreamed.TryGetValue(sceneName, out flag)) {
+        if (m_canBeStreamed.TryGetValue(sceneName, out flag)) {
             return flag;
         }
+
         flag = Application.CanStreamedLevelBeLoaded(sceneName);
-        this.m_canBeStreamed[sceneName] = flag;
+        m_canBeStreamed[sceneName] = flag;
         return flag;
     }
 
@@ -580,24 +618,25 @@ public class ScenesManager : SaveSerialize {
         if (Time.timeScale > 2f) {
             async = false;
         }
-        List<RuntimeSceneMetaData> allScenes = this.AllScenes;
-        int count = allScenes.Count;
+
+        var allScenes = AllScenes;
+        var count = allScenes.Count;
         Rect rect;
-        this.GetSceneBoundaryAtPosition(position, out rect);
-        for (int i = 0; i < count; i++) {
-            RuntimeSceneMetaData runtimeSceneMetaData = allScenes[i];
+        GetSceneBoundaryAtPosition(position, out rect);
+        for (var i = 0; i < count; i++) {
+            var runtimeSceneMetaData = allScenes[i];
             if (!runtimeSceneMetaData.DependantScene) {
                 if (runtimeSceneMetaData.IsInTotal(position)) {
                     if (runtimeSceneMetaData.IsInsideSceneBounds(position)) {
                         if (runtimeSceneMetaData.CanBeLoaded) {
-                            this.AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
+                            AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
                         }
                     } else if (runtimeSceneMetaData.IsInsideScenePaddingBounds(position, rect)) {
                         if (runtimeSceneMetaData.CanBeLoaded) {
-                            this.AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
+                            AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
                         }
                     } else if (runtimeSceneMetaData.IsInsideSceneLoadingZone(position) && runtimeSceneMetaData.CanBeLoaded && loadingZones) {
-                        this.AdditivelyLoadScene(runtimeSceneMetaData, true, keepPreloaded);
+                        AdditivelyLoadScene(runtimeSceneMetaData, true, keepPreloaded);
                     }
                 }
             }
@@ -608,24 +647,25 @@ public class ScenesManager : SaveSerialize {
         if (Time.timeScale > 2f) {
             async = false;
         }
-        List<RuntimeSceneMetaData> allScenes = this.AllScenes;
-        int count = allScenes.Count;
+
+        var allScenes = AllScenes;
+        var count = allScenes.Count;
         Rect rect2;
-        this.GetSceneBoundaryAtPosition(rect.center, out rect2);
-        for (int i = 0; i < count; i++) {
-            RuntimeSceneMetaData runtimeSceneMetaData = allScenes[i];
+        GetSceneBoundaryAtPosition(rect.center, out rect2);
+        for (var i = 0; i < count; i++) {
+            var runtimeSceneMetaData = allScenes[i];
             if (!runtimeSceneMetaData.DependantScene) {
                 if (runtimeSceneMetaData.IsInTotal(rect)) {
                     if (runtimeSceneMetaData.IsInsideSceneBounds(rect)) {
                         if (runtimeSceneMetaData.CanBeLoaded) {
-                            this.AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
+                            AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
                         }
                     } else if (runtimeSceneMetaData.IsInsideScenePaddingBounds(rect, rect2)) {
                         if (runtimeSceneMetaData.CanBeLoaded) {
-                            this.AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
+                            AdditivelyLoadScene(runtimeSceneMetaData, async, keepPreloaded);
                         }
                     } else if (runtimeSceneMetaData.IsInsideSceneLoadingZone(rect) && runtimeSceneMetaData.CanBeLoaded && loadingZones) {
-                        this.AdditivelyLoadScene(runtimeSceneMetaData, true, keepPreloaded);
+                        AdditivelyLoadScene(runtimeSceneMetaData, true, keepPreloaded);
                     }
                 }
             }
@@ -633,68 +673,71 @@ public class ScenesManager : SaveSerialize {
     }
 
     private void AdditivelyLoadScene(RuntimeSceneMetaData sceneMetaData, bool async, bool keepPreloaded = false) {
-        SceneManagerScene fromCurrentScenes = this.GetFromCurrentScenes(sceneMetaData);
+        var fromCurrentScenes = GetFromCurrentScenes(sceneMetaData);
         if (fromCurrentScenes != null) {
             if (fromCurrentScenes.CurrentState == SceneManagerScene.State.LoadingCancelled) {
                 fromCurrentScenes.ChangeState(SceneManagerScene.State.Loading);
-                this.LoadDependantScenes(fromCurrentScenes.MetaData, true);
+                LoadDependantScenes(fromCurrentScenes.MetaData, true);
                 if (keepPreloaded) {
                     fromCurrentScenes.PreventUnloading = true;
                 }
             }
-        } else if (this.CanLevelBeLoaded(sceneMetaData.Scene)) {
-            if (this.CanLoadScenes) {
+        } else if (CanLevelBeLoaded(sceneMetaData.Scene)) {
+            if (CanLoadScenes) {
                 if (async) {
-                    AsyncOperation asyncOperation = Application.LoadLevelAdditiveAsync(sceneMetaData.Scene);
+                    var asyncOperation = Application.LoadLevelAdditiveAsync(sceneMetaData.Scene);
                     asyncOperation.priority = 2;
                 } else {
                     Application.LoadLevelAdditive(sceneMetaData.Scene);
                 }
             }
-            SceneManagerScene sceneManagerScene = new SceneManagerScene(sceneMetaData);
-            this.ActiveScenes.Add(sceneManagerScene);
+
+            var sceneManagerScene = new SceneManagerScene(sceneMetaData);
+            ActiveScenes.Add(sceneManagerScene);
             sceneManagerScene.PreventUnloading = keepPreloaded;
-            this.LoadDependantScenes(sceneMetaData, async);
+            LoadDependantScenes(sceneMetaData, async);
         }
     }
 
     private void LoadDependantScenes(RuntimeSceneMetaData sceneMetaData, bool async) {
-        for (int i = 0; i < sceneMetaData.IncludedScenes.Count; i++) {
-            RuntimeSceneMetaData runtimeSceneMetaData = this.FindRuntimeSceneMetaData(sceneMetaData.IncludedScenes[i]);
+        for (var i = 0; i < sceneMetaData.IncludedScenes.Count; i++) {
+            var runtimeSceneMetaData = FindRuntimeSceneMetaData(sceneMetaData.IncludedScenes[i]);
             if (runtimeSceneMetaData != null && runtimeSceneMetaData.CanBeLoaded) {
-                this.AdditivelyLoadScene(runtimeSceneMetaData, async, false);
+                AdditivelyLoadScene(runtimeSceneMetaData, async);
             }
         }
     }
 
     public void UnloadScenesAtPosition(bool instant) {
-        Rect clampedRect = this.GetClampedRect(this.CurrentCameraTargetPosition);
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
-            RuntimeSceneMetaData metaData = sceneManagerScene.MetaData;
+        var clampedRect = GetClampedRect(CurrentCameraTargetPosition);
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
+            var metaData = sceneManagerScene.MetaData;
             if (metaData != null) {
                 if (!metaData.DependantScene) {
-                    bool flag = metaData.IsInsideSceneBounds(this.CurrentCameraTargetPosition) || metaData.IsInsideScenePaddingBounds(this.CurrentCameraTargetPosition);
-                    for (int j = 0; j < this.m_cameraPositions.Count; j++) {
-                        Vector3 vector = this.m_cameraPositions[j];
+                    var flag = metaData.IsInsideSceneBounds(CurrentCameraTargetPosition) || metaData.IsInsideScenePaddingBounds(CurrentCameraTargetPosition);
+                    for (var j = 0; j < m_cameraPositions.Count; j++) {
+                        var vector = m_cameraPositions[j];
                         if (metaData.IsInsideSceneBounds(vector) || metaData.IsInsideScenePaddingBounds(vector)) {
                             flag = true;
                         }
                     }
+
                     if (!flag || !metaData.CanBeLoaded) {
-                        bool flag2 = (metaData.CanBeLoaded && (metaData.IsInsideSceneLoadingZone(clampedRect) || metaData.IsInsideSceneBounds(clampedRect) || metaData.IsInsideScenePaddingBoundsExpanded(clampedRect))) || sceneManagerScene.PreventUnloading || sceneManagerScene.KeepLoadedForCheckpoint || sceneManagerScene.IsTitleScreen;
-                        if (this.UnloadScene(sceneManagerScene, flag2, instant || !metaData.CanBeLoaded)) {
+                        var flag2 = (metaData.CanBeLoaded && (metaData.IsInsideSceneLoadingZone(clampedRect) || metaData.IsInsideSceneBounds(clampedRect) || metaData.IsInsideScenePaddingBoundsExpanded(clampedRect))) || sceneManagerScene.PreventUnloading || sceneManagerScene.KeepLoadedForCheckpoint || sceneManagerScene.IsTitleScreen;
+                        if (UnloadScene(sceneManagerScene, flag2, instant || !metaData.CanBeLoaded)) {
                             i--;
                         }
                     }
                 }
             }
         }
-        this.UnloadDependantScenes();
+
+        UnloadDependantScenes();
     }
 
     public void OnPassThroughScrollLock() {
-        this.UpdateScenes();
+        UpdateScenes();
     }
 
     public void OnDisableSceneRoot(SceneRoot sceneRoot) {
@@ -705,18 +748,20 @@ public class ScenesManager : SaveSerialize {
     }
 
     public bool UnloadScene(SceneManagerScene scene, bool keepInMemory, bool instant) {
-        if (!this.AllowDestroying) {
+        if (!AllowDestroying) {
             keepInMemory = true;
         }
+
         if (keepInMemory) {
             switch (scene.CurrentState) {
                 case SceneManagerScene.State.Disabling:
                     if (Time.time > scene.UnloadTime || instant) {
-                        this.OnDisableSceneRoot(scene.SceneRoot);
+                        OnDisableSceneRoot(scene.SceneRoot);
                         scene.ChangeState(SceneManagerScene.State.Disabled);
                         scene.SceneRoot.Save();
                         scene.SceneRoot.DisableScene();
                     }
+
                     return false;
                 case SceneManagerScene.State.LoadingCancelled:
                     scene.ChangeState(SceneManagerScene.State.Loading);
@@ -725,106 +770,114 @@ public class ScenesManager : SaveSerialize {
                     if (instant) {
                         scene.ChangeState(SceneManagerScene.State.Disabled);
                         scene.SceneRoot.Save();
-                        this.OnDisableSceneRoot(scene.SceneRoot);
+                        OnDisableSceneRoot(scene.SceneRoot);
                         scene.SceneRoot.DisableScene();
                     } else {
                         scene.ChangeState(SceneManagerScene.State.Disabling);
-                        scene.UnloadTime = Time.time + this.UnloadDelay;
+                        scene.UnloadTime = Time.time + UnloadDelay;
                     }
+
                     return false;
             }
         } else {
             switch (scene.CurrentState) {
                 case SceneManagerScene.State.Disabling:
                     if (Time.time > scene.UnloadTime) {
-                        this.OnDisableSceneRoot(scene.SceneRoot);
+                        OnDisableSceneRoot(scene.SceneRoot);
                         scene.SceneRoot.SaveAndUnload();
-                        this.RemoveScene(scene);
+                        RemoveScene(scene);
                         return true;
                     }
+
                     return false;
                 case SceneManagerScene.State.Disabled:
                     scene.SceneRoot.Unload();
-                    this.RemoveScene(scene);
+                    RemoveScene(scene);
                     return true;
                 case SceneManagerScene.State.Loading:
                     scene.ChangeState(SceneManagerScene.State.LoadingCancelled);
-                    return this.CancelScene(scene);
+                    return CancelScene(scene);
                 case SceneManagerScene.State.Loaded:
                     if (instant) {
-                        this.OnDisableSceneRoot(scene.SceneRoot);
+                        OnDisableSceneRoot(scene.SceneRoot);
                         scene.SceneRoot.SaveAndUnload();
-                        this.RemoveScene(scene);
+                        RemoveScene(scene);
                         return true;
                     }
+
                     scene.ChangeState(SceneManagerScene.State.Disabling);
-                    scene.UnloadTime = Time.time + this.UnloadDelay;
+                    scene.UnloadTime = Time.time + UnloadDelay;
                     return false;
             }
         }
+
         return false;
     }
 
     public void ReleaseUnusedResources() {
-        this.m_resourcesNeedUnloading = 3;
+        m_resourcesNeedUnloading = 3;
     }
 
     public void UnloadDependantScenes() {
-        Vector3 vector = this.CurrentCameraTargetPosition;
-        this.m_scenesToDisable.Clear();
-        this.m_scenesToInclude.Clear();
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        Vector3 vector = CurrentCameraTargetPosition;
+        m_scenesToDisable.Clear();
+        m_scenesToInclude.Clear();
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (!sceneManagerScene.MetaData.DependantScene) {
                 if (sceneManagerScene.CurrentState == SceneManagerScene.State.Disabled || sceneManagerScene.CurrentState == SceneManagerScene.State.Loading) {
-                    for (int j = 0; j < sceneManagerScene.MetaData.IncludedScenes.Count; j++) {
-                        RuntimeSceneMetaData runtimeSceneMetaData = this.FindRuntimeSceneMetaData(sceneManagerScene.MetaData.IncludedScenes[j]);
+                    for (var j = 0; j < sceneManagerScene.MetaData.IncludedScenes.Count; j++) {
+                        var runtimeSceneMetaData = FindRuntimeSceneMetaData(sceneManagerScene.MetaData.IncludedScenes[j]);
                         if (runtimeSceneMetaData != null) {
-                            this.m_scenesToDisable.Add(runtimeSceneMetaData);
+                            m_scenesToDisable.Add(runtimeSceneMetaData);
                         }
                     }
                 }
+
                 if (sceneManagerScene.CurrentState == SceneManagerScene.State.Loaded || sceneManagerScene.CurrentState == SceneManagerScene.State.Disabling) {
                     if (sceneManagerScene.MetaData.IsInsideSceneBounds(vector) || sceneManagerScene.MetaData.IsInsideScenePaddingBounds(vector)) {
-                        for (int k = 0; k < sceneManagerScene.MetaData.IncludedScenes.Count; k++) {
-                            RuntimeSceneMetaData runtimeSceneMetaData2 = this.FindRuntimeSceneMetaData(sceneManagerScene.MetaData.IncludedScenes[k]);
+                        for (var k = 0; k < sceneManagerScene.MetaData.IncludedScenes.Count; k++) {
+                            var runtimeSceneMetaData2 = FindRuntimeSceneMetaData(sceneManagerScene.MetaData.IncludedScenes[k]);
                             if (runtimeSceneMetaData2 != null) {
-                                this.m_scenesToInclude.Add(runtimeSceneMetaData2);
+                                m_scenesToInclude.Add(runtimeSceneMetaData2);
                             }
                         }
                     } else {
-                        for (int l = 0; l < sceneManagerScene.MetaData.IncludedScenes.Count; l++) {
-                            RuntimeSceneMetaData runtimeSceneMetaData3 = this.FindRuntimeSceneMetaData(sceneManagerScene.MetaData.IncludedScenes[l]);
+                        for (var l = 0; l < sceneManagerScene.MetaData.IncludedScenes.Count; l++) {
+                            var runtimeSceneMetaData3 = FindRuntimeSceneMetaData(sceneManagerScene.MetaData.IncludedScenes[l]);
                             if (runtimeSceneMetaData3 != null) {
-                                this.m_scenesToDisable.Add(runtimeSceneMetaData3);
+                                m_scenesToDisable.Add(runtimeSceneMetaData3);
                             }
                         }
                     }
                 }
             }
         }
-        for (int m = 0; m < this.ActiveScenes.Count; m++) {
-            SceneManagerScene sceneManagerScene2 = this.ActiveScenes[m];
-            RuntimeSceneMetaData metaData = sceneManagerScene2.MetaData;
-            if (metaData.DependantScene && !this.m_scenesToInclude.Contains(metaData) && this.UnloadScene(sceneManagerScene2, this.m_scenesToDisable.Contains(metaData), true)) {
+
+        for (var m = 0; m < ActiveScenes.Count; m++) {
+            var sceneManagerScene2 = ActiveScenes[m];
+            var metaData = sceneManagerScene2.MetaData;
+            if (metaData.DependantScene && !m_scenesToInclude.Contains(metaData) && UnloadScene(sceneManagerScene2, m_scenesToDisable.Contains(metaData), true)) {
                 m--;
             }
         }
-        this.m_scenesToDisable.Clear();
-        this.m_scenesToInclude.Clear();
+
+        m_scenesToDisable.Clear();
+        m_scenesToInclude.Clear();
     }
 
     public void UpdateScenes() {
-        this.UpdatePosition();
-        if (this.IsInsideASceneBoundary(this.CurrentCameraTargetPosition) && !this.ScenesNotLoadedOnTime) {
-            this.UnloadScenesAtPosition(false);
+        UpdatePosition();
+        if (IsInsideASceneBoundary(CurrentCameraTargetPosition) && !ScenesNotLoadedOnTime) {
+            UnloadScenesAtPosition(false);
         }
-        this.AdditivelyLoadScenesAtPosition(this.CurrentCameraTargetPositionExtrapolated, true, true, false);
+
+        AdditivelyLoadScenesAtPosition(CurrentCameraTargetPositionExtrapolated, true);
     }
 
     public void OnSceneStartCompleted(SceneRoot sceneRoot) {
-        RuntimeSceneMetaData runtimeSceneMetaData = this.FindRuntimeSceneMetaData(sceneRoot.MetaData.SceneMoonGuid);
-        SceneManagerScene fromCurrentScenes = this.GetFromCurrentScenes(runtimeSceneMetaData);
+        var runtimeSceneMetaData = FindRuntimeSceneMetaData(sceneRoot.MetaData.SceneMoonGuid);
+        var fromCurrentScenes = GetFromCurrentScenes(runtimeSceneMetaData);
         if (fromCurrentScenes != null) {
             fromCurrentScenes.HasStartBeenCalled = true;
         }
@@ -835,86 +888,92 @@ public class ScenesManager : SaveSerialize {
             WorldMapUI.OnFinishedLoading(sceneRoot);
             return;
         }
-        RuntimeSceneMetaData runtimeSceneMetaData = this.FindRuntimeSceneMetaData(sceneRoot.MetaData.SceneMoonGuid);
-        SceneManagerScene sceneManagerScene = this.GetFromCurrentScenes(runtimeSceneMetaData);
-        SceneMetaData metaData = sceneRoot.MetaData;
+
+        var runtimeSceneMetaData = FindRuntimeSceneMetaData(sceneRoot.MetaData.SceneMoonGuid);
+        var sceneManagerScene = GetFromCurrentScenes(runtimeSceneMetaData);
+        var metaData = sceneRoot.MetaData;
         if (sceneManagerScene == null) {
             sceneManagerScene = new SceneManagerScene(sceneRoot, runtimeSceneMetaData);
-            this.UpdatePosition();
-            if (sceneRoot.MetaData.IsInsideSceneBounds(this.CurrentCameraTargetPosition) || sceneRoot.MetaData.IsInsideScenePaddingBounds(this.CurrentCameraTargetPosition)) {
-                this.ActiveScenes.Add(sceneManagerScene);
-                this.EnableDisabledScene(sceneManagerScene);
+            UpdatePosition();
+            if (sceneRoot.MetaData.IsInsideSceneBounds(CurrentCameraTargetPosition) || sceneRoot.MetaData.IsInsideScenePaddingBounds(CurrentCameraTargetPosition)) {
+                ActiveScenes.Add(sceneManagerScene);
+                EnableDisabledScene(sceneManagerScene);
             } else {
                 sceneManagerScene.CurrentState = SceneManagerScene.State.Disabled;
-                this.ActiveScenes.Add(sceneManagerScene);
+                ActiveScenes.Add(sceneManagerScene);
                 sceneRoot.DisableScene();
             }
         } else {
             if (sceneManagerScene.SceneRoot == sceneRoot) {
                 return;
             }
+
             if (sceneManagerScene.CurrentState == SceneManagerScene.State.Loading) {
                 sceneManagerScene.ChangeState(SceneManagerScene.State.Disabled);
                 if (sceneRoot.MetaData.RootPosition != sceneRoot.transform.position) {
                     sceneRoot.transform.position = sceneRoot.MetaData.RootPosition;
                 }
+
                 sceneManagerScene.SceneRoot = sceneRoot;
                 sceneRoot.DisableScene();
             } else if (sceneManagerScene.CurrentState == SceneManagerScene.State.LoadingCancelled) {
                 sceneManagerScene.SceneRoot = sceneRoot;
                 sceneRoot.Unload();
-                this.RemoveScene(sceneManagerScene);
+                RemoveScene(sceneManagerScene);
             } else {
                 sceneRoot.Unload();
             }
         }
+
         sceneManagerScene.LoadingTime = Time.realtimeSinceStartup - sceneManagerScene.TimeOfLoad;
         SceneFrameworkPerformanceMonitor.AddSceneLoadItem(sceneManagerScene);
     }
 
     public bool AnyMissingScenesAtCurrentPosition() {
-        Vector3 vector = this.CurrentCameraTargetPosition;
-        Bounds cameraBoundingBox = UI.Cameras.Current.CameraBoundingBox;
+        Vector3 vector = CurrentCameraTargetPosition;
+        var cameraBoundingBox = UI.Cameras.Current.CameraBoundingBox;
         cameraBoundingBox.Expand(2f);
         cameraBoundingBox.center = vector;
-        Rect rect = Utility.RectFromBounds(cameraBoundingBox);
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
-            RuntimeSceneMetaData metaData = sceneManagerScene.MetaData;
+        var rect = Utility.RectFromBounds(cameraBoundingBox);
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
+            var metaData = sceneManagerScene.MetaData;
             if (!metaData.DependantScene) {
-                bool flag = metaData.IsInsideSceneBounds(rect) && (metaData.IsInsideSceneBounds(vector) || metaData.IsInsideScenePaddingBounds(vector));
+                var flag = metaData.IsInsideSceneBounds(rect) && (metaData.IsInsideSceneBounds(vector) || metaData.IsInsideScenePaddingBounds(vector));
                 if (flag && sceneManagerScene.UnityIsLoading) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
     public void EnableDisabledScenesAtPosition(bool limitOnce = false) {
-        Vector3 vector = this.CurrentCameraTargetPosition;
-        this.m_scenesToEnable.Clear();
+        Vector3 vector = CurrentCameraTargetPosition;
+        m_scenesToEnable.Clear();
         Rect rect;
-        this.GetSceneBoundaryAtPosition(vector, out rect);
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        GetSceneBoundaryAtPosition(vector, out rect);
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             if (!sceneManagerScene.UnityIsLoading) {
                 if (sceneManagerScene.MetaData != null) {
-                    RuntimeSceneMetaData metaData = sceneManagerScene.MetaData;
+                    var metaData = sceneManagerScene.MetaData;
                     if (!metaData.DependantScene) {
                         if (sceneManagerScene.CurrentState == SceneManagerScene.State.Disabled || sceneManagerScene.CurrentState == SceneManagerScene.State.Disabling) {
-                            bool flag = metaData.IsInsideSceneBounds(vector) || metaData.IsInsideScenePaddingBounds(vector, rect);
-                            for (int j = 0; j < this.m_cameraPositions.Count; j++) {
-                                Vector3 vector2 = this.m_cameraPositions[j];
+                            var flag = metaData.IsInsideSceneBounds(vector) || metaData.IsInsideScenePaddingBounds(vector, rect);
+                            for (var j = 0; j < m_cameraPositions.Count; j++) {
+                                var vector2 = m_cameraPositions[j];
                                 if (metaData.IsInsideSceneBounds(vector2) || metaData.IsInsideScenePaddingBounds(vector2, rect)) {
                                     flag = true;
                                 }
                             }
+
                             if (flag && metaData.CanBeLoaded) {
                                 if (sceneManagerScene.CurrentState == SceneManagerScene.State.Disabled) {
-                                    this.EnableDisabledScene(sceneManagerScene);
+                                    EnableDisabledScene(sceneManagerScene);
                                     if (limitOnce) {
-                                        this.m_scenesToEnable.Clear();
+                                        m_scenesToEnable.Clear();
                                         return;
                                     }
                                 } else {
@@ -922,12 +981,13 @@ public class ScenesManager : SaveSerialize {
                                 }
                             }
                         }
+
                         if ((sceneManagerScene.CurrentState == SceneManagerScene.State.Loaded || sceneManagerScene.CurrentState == SceneManagerScene.State.Disabling) && (sceneManagerScene.MetaData.IsInsideSceneBounds(vector) || metaData.IsInsideScenePaddingBounds(vector))) {
-                            for (int k = 0; k < sceneManagerScene.MetaData.IncludedScenes.Count; k++) {
-                                MoonGuid moonGuid = sceneManagerScene.MetaData.IncludedScenes[k];
-                                RuntimeSceneMetaData runtimeSceneMetaData = this.FindRuntimeSceneMetaData(moonGuid);
+                            for (var k = 0; k < sceneManagerScene.MetaData.IncludedScenes.Count; k++) {
+                                var moonGuid = sceneManagerScene.MetaData.IncludedScenes[k];
+                                var runtimeSceneMetaData = FindRuntimeSceneMetaData(moonGuid);
                                 if (runtimeSceneMetaData != null) {
-                                    this.m_scenesToEnable.Add(runtimeSceneMetaData);
+                                    m_scenesToEnable.Add(runtimeSceneMetaData);
                                 }
                             }
                         }
@@ -935,20 +995,22 @@ public class ScenesManager : SaveSerialize {
                 }
             }
         }
-        for (int l = 0; l < this.ActiveScenes.Count; l++) {
-            SceneManagerScene sceneManagerScene2 = this.ActiveScenes[l];
+
+        for (var l = 0; l < ActiveScenes.Count; l++) {
+            var sceneManagerScene2 = ActiveScenes[l];
             if (sceneManagerScene2.CurrentState == SceneManagerScene.State.Disabled) {
-                RuntimeSceneMetaData metaData2 = sceneManagerScene2.MetaData;
-                if (metaData2.DependantScene && this.m_scenesToEnable.Contains(sceneManagerScene2.MetaData)) {
-                    this.EnableDisabledScene(sceneManagerScene2);
+                var metaData2 = sceneManagerScene2.MetaData;
+                if (metaData2.DependantScene && m_scenesToEnable.Contains(sceneManagerScene2.MetaData)) {
+                    EnableDisabledScene(sceneManagerScene2);
                     if (limitOnce) {
-                        this.m_scenesToEnable.Clear();
+                        m_scenesToEnable.Clear();
                         return;
                     }
                 }
             }
         }
-        this.m_scenesToEnable.Clear();
+
+        m_scenesToEnable.Clear();
     }
 
     private void EnableDisabledScene(SceneManagerScene scene) {
@@ -959,7 +1021,8 @@ public class ScenesManager : SaveSerialize {
         if (!scene.HasStartBeenCalled) {
             scene.SceneRoot.EarlyStart();
         }
-        LateStartHook.AddLateStartMethod(new Action(scene.SceneRoot.RegisterSceneRootEnabledAfterSerialize));
+
+        LateStartHook.AddLateStartMethod(scene.SceneRoot.RegisterSceneRootEnabledAfterSerialize);
     }
 
     public void CheckForScenesFinishedLoading() {
@@ -968,24 +1031,24 @@ public class ScenesManager : SaveSerialize {
     }
 
     public void UnloadAllScenes() {
-        foreach (SceneManagerScene sceneManagerScene in this.ActiveScenes.ToArray()) {
+        foreach (var sceneManagerScene in ActiveScenes.ToArray()) {
             if (!sceneManagerScene.IsTitleScreen) {
                 switch (sceneManagerScene.CurrentState) {
                     case SceneManagerScene.State.Disabling:
                         sceneManagerScene.SceneRoot.SaveAndUnload();
-                        this.RemoveScene(sceneManagerScene);
+                        RemoveScene(sceneManagerScene);
                         break;
                     case SceneManagerScene.State.Disabled:
                         sceneManagerScene.SceneRoot.Unload();
-                        this.RemoveScene(sceneManagerScene);
+                        RemoveScene(sceneManagerScene);
                         break;
                     case SceneManagerScene.State.Loading:
                         sceneManagerScene.ChangeState(SceneManagerScene.State.LoadingCancelled);
-                        this.CancelScene(sceneManagerScene);
+                        CancelScene(sceneManagerScene);
                         break;
                     case SceneManagerScene.State.Loaded:
                         sceneManagerScene.SceneRoot.SaveAndUnload();
-                        this.RemoveScene(sceneManagerScene);
+                        RemoveScene(sceneManagerScene);
                         break;
                 }
             }
@@ -997,18 +1060,18 @@ public class ScenesManager : SaveSerialize {
     }
 
     public void AllowUnloadingOnAllScenes() {
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
             sceneManagerScene.PreventUnloading = false;
             sceneManagerScene.KeepLoadedForCheckpoint = false;
         }
     }
 
     public void AllowUnloadingOnScenes(Vector3 position) {
-        Rect clampedRect = this.GetClampedRect(position);
-        for (int i = 0; i < this.ActiveScenes.Count; i++) {
-            SceneManagerScene sceneManagerScene = this.ActiveScenes[i];
-            RuntimeSceneMetaData metaData = sceneManagerScene.MetaData;
+        var clampedRect = GetClampedRect(position);
+        for (var i = 0; i < ActiveScenes.Count; i++) {
+            var sceneManagerScene = ActiveScenes[i];
+            var metaData = sceneManagerScene.MetaData;
             if (!metaData.DependantScene) {
                 if (metaData.CanBeLoaded && (metaData.IsInsideSceneLoadingZone(clampedRect) || metaData.IsInsideSceneBounds(clampedRect) || metaData.IsInsideScenePaddingBounds(clampedRect))) {
                     sceneManagerScene.PreventUnloading = false;
@@ -1018,28 +1081,31 @@ public class ScenesManager : SaveSerialize {
     }
 
     public bool SceneIsLoaded(MoonGuid sceneGuid) {
-        foreach (SceneManagerScene sceneManagerScene in this.ActiveScenes) {
+        foreach (var sceneManagerScene in ActiveScenes) {
             if (sceneManagerScene.MetaData.SceneMoonGuid == sceneGuid) {
                 if (sceneManagerScene.CurrentState == SceneManagerScene.State.Loading || sceneManagerScene.CurrentState == SceneManagerScene.State.LoadingCancelled) {
                     return false;
                 }
+
                 return true;
             }
         }
+
         return false;
     }
 
     public void OnFinishedStreamingInstall() {
-        this.m_canBeStreamed.Clear();
+        m_canBeStreamed.Clear();
     }
 
     public string GetSceneNameAtPosition(Vector3 position) {
-        for (int i = 0; i < AllScenes.Count; i++) {
+        for (var i = 0; i < AllScenes.Count; i++) {
             var runtimeSceneMetaData = AllScenes[i];
             if (!runtimeSceneMetaData.DependantScene && runtimeSceneMetaData.IsInTotal(position) && runtimeSceneMetaData.IsInsideSceneBounds(position)) {
                 return runtimeSceneMetaData.Scene;
             }
         }
+
         return null;
     }
 

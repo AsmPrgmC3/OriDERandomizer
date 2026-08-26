@@ -1,11 +1,10 @@
-using System;
-using Core;
+using Game;
 using UnityEngine;
 
 public class RandomizerMoveCameraAction : ActionMethod {
     public override void Perform(IContext context) {
-        Game.UI.Cameras.Current.CameraTarget.SetTargetPosition(Position);
-        Game.UI.Cameras.Current.MoveCameraToTargetInstantly(true);
+        UI.Cameras.Current.CameraTarget.SetTargetPosition(Position);
+        UI.Cameras.Current.MoveCameraToTargetInstantly();
     }
 
     public Vector3 Position;

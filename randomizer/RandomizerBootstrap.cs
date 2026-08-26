@@ -469,8 +469,9 @@ public class RandomizerBootstrap {
         if (Randomizer.SpawnScene == null) {
             return;
         }
+
         var actionSequence = sceneRoot.transform.FindChild("*objectiveSetup/objectiveSetupTrigger/objectiveSetupAction").GetComponent<ActionSequence>();
-        List<ActionMethod> original_list = new List<ActionMethod>(actionSequence.Actions);
+        var original_list = new List<ActionMethod>(actionSequence.Actions);
         // Remove everything after "09. Wait 4 seconds".
         actionSequence.Actions.RemoveRange(9, 8);
         // Make it load our desired target scene immediately.

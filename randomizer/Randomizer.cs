@@ -1581,26 +1581,27 @@ public static class Randomizer {
     }
 
     public static void GetSpawnInformation() {
-        if (!Randomizer.SpawnWith.Contains("WS")) {
+        if (!SpawnWith.Contains("WS")) {
             return;
         }
-        if (Core.Scenes.Manager is null) {
+
+        if (Scenes.Manager is null) {
             return;
         }
-        var wsLocation = Randomizer.SpawnWith.IndexOf("WS");
+
+        var wsLocation = SpawnWith.IndexOf("WS");
         var wsLength = 2;
-        if (Randomizer.SpawnWith.Contains("WS/")) {
+        if (SpawnWith.Contains("WS/")) {
             wsLength = 3;
         }
-        string[] pieces = Randomizer.SpawnWith.Substring(wsLocation + wsLength).Split(',');
-        int warpX;
-        int warpY;
-        if ((pieces.Length < 2) || !int.TryParse(pieces[0], out warpX) || !int.TryParse(pieces[1], out warpY)) {
+
+        var pieces = SpawnWith.Substring(wsLocation + wsLength).Split(',');
+        if (pieces.Length < 2 || !int.TryParse(pieces[0], out var warpX) || !int.TryParse(pieces[1], out var warpY)) {
             return;
         }
 
         SpawnPosition = new Vector3(warpX, warpY, 0);
-        SpawnScene = Core.Scenes.Manager.GetSceneNameAtPosition(SpawnPosition);
+        SpawnScene = Scenes.Manager.GetSceneNameAtPosition(SpawnPosition);
         ShouldHideGladesStart = true;
     }
 
@@ -1760,6 +1761,6 @@ public static class Randomizer {
     public static Vector3 SpawnPosition;
 
     public static string SpawnScene;
-    
+
     public static bool ShouldHideGladesStart;
 }

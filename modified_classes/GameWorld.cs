@@ -1,14 +1,13 @@
-using System;
 using System.Collections.Generic;
 using Game;
 using UnityEngine;
 
 public class GameWorld : SaveSerialize {
     public bool HasCompletedEverything() {
-        bool flag = false;
-        foreach (RuntimeGameWorldArea runtimeGameWorldArea in this.RuntimeAreas) {
-            foreach (RuntimeWorldMapIcon runtimeWorldMapIcon in runtimeGameWorldArea.Icons) {
-                WorldMapIconType icon = runtimeWorldMapIcon.Icon;
+        var flag = false;
+        foreach (var runtimeGameWorldArea in RuntimeAreas) {
+            foreach (var runtimeWorldMapIcon in runtimeGameWorldArea.Icons) {
+                var icon = runtimeWorldMapIcon.Icon;
                 switch (icon) {
                     case WorldMapIconType.HealthUpgrade:
                     case WorldMapIconType.EnergyUpgrade:
@@ -20,136 +19,151 @@ public class GameWorld : SaveSerialize {
                         if (icon != WorldMapIconType.Keystone) {
                             continue;
                         }
+
                         break;
                 }
+
                 flag = true;
             }
         }
-        return !flag && this.CompletionPercentage == 100;
+
+        return !flag && CompletionPercentage == 100;
     }
 
     public void RevealIcon(MoonGuid icon) {
-        this.m_revealedIcons.Add(icon);
+        m_revealedIcons.Add(icon);
     }
 
     public bool IconRevealed(MoonGuid icon) {
-        return this.m_revealedIcons.Contains(icon);
+        return m_revealedIcons.Contains(icon);
     }
 
     public float CompletionAmount {
         get {
-            int num = 0;
-            float num2 = 0f;
-            for (int i = 0; i < this.RuntimeAreas.Count; i++) {
-                RuntimeGameWorldArea runtimeGameWorldArea = this.RuntimeAreas[i];
+            var num = 0;
+            var num2 = 0f;
+            for (var i = 0; i < RuntimeAreas.Count; i++) {
+                var runtimeGameWorldArea = RuntimeAreas[i];
                 num++;
                 num2 += runtimeGameWorldArea.CompletionAmount;
             }
-            return num2 / (float)num;
+
+            return num2 / num;
         }
     }
 
     public int CompletionPercentage {
         get {
-            float completionAmount = this.CompletionAmount;
+            var completionAmount = CompletionAmount;
             if (Mathf.Approximately(completionAmount, 1f)) {
                 return 100;
             }
-            return Mathf.Clamp(Mathf.RoundToInt(this.CompletionAmount * 100f), 0, 99);
+
+            return Mathf.Clamp(Mathf.RoundToInt(CompletionAmount * 100f), 0, 99);
         }
     }
 
     public GameWorldArea FindAreaFromPosition(Vector3 position) {
-        for (int i = 0; i < this.Areas.Count; i++) {
-            GameWorldArea gameWorldArea = this.Areas[i];
+        for (var i = 0; i < Areas.Count; i++) {
+            var gameWorldArea = Areas[i];
             if (gameWorldArea.InsideFace(position)) {
                 return gameWorldArea;
             }
         }
+
         return null;
     }
 
     public RuntimeGameWorldArea FindRuntimeArea(GameWorldArea area) {
-        for (int i = 0; i < this.RuntimeAreas.Count; i++) {
-            RuntimeGameWorldArea runtimeGameWorldArea = this.RuntimeAreas[i];
+        for (var i = 0; i < RuntimeAreas.Count; i++) {
+            var runtimeGameWorldArea = RuntimeAreas[i];
             if (runtimeGameWorldArea.Area == area) {
                 return runtimeGameWorldArea;
             }
         }
+
         return null;
     }
 
     public override void Awake() {
-        GameWorld.Instance = this;
-        this.RuntimeAreas.Capacity = this.Areas.Count;
-        for (int i = 0; i < this.Areas.Count; i++) {
-            GameWorldArea gameWorldArea = this.Areas[i];
-            this.RuntimeAreas.Add(new RuntimeGameWorldArea(gameWorldArea));
+        Instance = this;
+        RuntimeAreas.Capacity = Areas.Count;
+        for (var i = 0; i < Areas.Count; i++) {
+            var gameWorldArea = Areas[i];
+            RuntimeAreas.Add(new RuntimeGameWorldArea(gameWorldArea));
         }
-        Events.Scheduler.OnGameReset.Add(new Action(this.OnGameReset));
+
+        Events.Scheduler.OnGameReset.Add(OnGameReset);
         base.Awake();
     }
 
     public override void OnDestroy() {
-        Events.Scheduler.OnGameReset.Remove(new Action(this.OnGameReset));
+        Events.Scheduler.OnGameReset.Remove(OnGameReset);
         base.OnDestroy();
     }
 
     public void OnGameReset() {
-        for (int i = 0; i < this.RuntimeAreas.Count; i++) {
-            RuntimeGameWorldArea runtimeGameWorldArea = this.RuntimeAreas[i];
+        for (var i = 0; i < RuntimeAreas.Count; i++) {
+            var runtimeGameWorldArea = RuntimeAreas[i];
             runtimeGameWorldArea.Initialize();
         }
-        this.m_revealedIcons.Clear();
-        this.ObjectiveText = null;
+
+        m_revealedIcons.Clear();
+        ObjectiveText = null;
     }
 
     public GameWorldArea AreaFromIndex(int i) {
-        if (i < 0 || i >= this.RuntimeAreas.Count) {
+        if (i < 0 || i >= RuntimeAreas.Count) {
             return null;
         }
-        return this.RuntimeAreas[i].Area;
+
+        return RuntimeAreas[i].Area;
     }
 
     public int IndexOfArea(GameWorldArea area) {
-        return this.RuntimeAreas.FindIndex((RuntimeGameWorldArea a) => a.Area == area);
+        return RuntimeAreas.FindIndex(a => a.Area == area);
     }
 
     public override void Serialize(Archive ar) {
         if (ar.Reading) {
-            int num = 0;
+            var num = 0;
             ar.Serialize(ref num);
-            if (this.Areas.Count != num) {
+            if (Areas.Count != num) {
                 return;
             }
-            int num2 = 0;
-            while (num2 < num && num2 < this.RuntimeAreas.Count) {
-                RuntimeGameWorldArea runtimeGameWorldArea = this.RuntimeAreas[num2];
+
+            var num2 = 0;
+            while (num2 < num && num2 < RuntimeAreas.Count) {
+                var runtimeGameWorldArea = RuntimeAreas[num2];
                 runtimeGameWorldArea.Serialize(ar);
                 num2++;
             }
-            this.m_revealedIcons.Clear();
-            int num3 = ar.Serialize(0);
-            for (int i = 0; i < num3; i++) {
-                MoonGuid moonGuid = new MoonGuid(0, 0, 0, 0);
+
+            m_revealedIcons.Clear();
+            var num3 = ar.Serialize(0);
+            for (var i = 0; i < num3; i++) {
+                var moonGuid = new MoonGuid(0, 0, 0, 0);
                 moonGuid.Serialize(ar);
-                this.m_revealedIcons.Add(moonGuid);
+                m_revealedIcons.Add(moonGuid);
             }
-            int num4 = ar.Serialize(0);
+
+            var num4 = ar.Serialize(0);
             if (num4 != -1) {
-                this.ObjectiveText = this.ObjectiveTextProviders[num4];
+                ObjectiveText = ObjectiveTextProviders[num4];
             }
         } else {
-            ar.Serialize(this.Areas.Count);
-            for (int j = 0; j < this.RuntimeAreas.Count; j++) {
-                RuntimeGameWorldArea runtimeGameWorldArea2 = this.RuntimeAreas[j];
+            ar.Serialize(Areas.Count);
+            for (var j = 0; j < RuntimeAreas.Count; j++) {
+                var runtimeGameWorldArea2 = RuntimeAreas[j];
                 runtimeGameWorldArea2.Serialize(ar);
             }
-            ar.Serialize(this.m_revealedIcons.Count);
-            foreach (MoonGuid moonGuid2 in this.m_revealedIcons) {
+
+            ar.Serialize(m_revealedIcons.Count);
+            foreach (var moonGuid2 in m_revealedIcons) {
                 moonGuid2.Serialize(ar);
             }
-            ar.Serialize(this.ObjectiveTextProviders.IndexOf(this.ObjectiveText));
+
+            ar.Serialize(ObjectiveTextProviders.IndexOf(ObjectiveText));
         }
     }
 
@@ -162,22 +176,25 @@ public class GameWorld : SaveSerialize {
                 return;
             }
         }
-        for (int i = 0; i < RuntimeAreas.Count; i++) {
+
+        for (var i = 0; i < RuntimeAreas.Count; i++) {
             var runtimeGameWorldArea = RuntimeAreas[i];
             runtimeGameWorldArea.VisitMapAreaAtPosition(currentPlayerPosition);
         }
+
         Randomizer.ShouldHideGladesStart = false;
     }
 
     public GameWorldArea WorldAreaAtPosition(Vector3 worldPosition) {
-        for (int i = 0; i < this.RuntimeAreas.Count; i++) {
-            RuntimeGameWorldArea runtimeGameWorldArea = this.RuntimeAreas[i];
-            Vector3 vector = runtimeGameWorldArea.Area.CageStructureTool.transform.InverseTransformPoint(worldPosition);
-            CageStructureTool.Face face = runtimeGameWorldArea.Area.CageStructureTool.FindFaceAtPositionFaster(vector);
+        for (var i = 0; i < RuntimeAreas.Count; i++) {
+            var runtimeGameWorldArea = RuntimeAreas[i];
+            var vector = runtimeGameWorldArea.Area.CageStructureTool.transform.InverseTransformPoint(worldPosition);
+            var face = runtimeGameWorldArea.Area.CageStructureTool.FindFaceAtPositionFaster(vector);
             if (face != null) {
                 return runtimeGameWorldArea.Area;
             }
         }
+
         return null;
     }
 
